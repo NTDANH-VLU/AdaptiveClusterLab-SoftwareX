@@ -1,6 +1,6 @@
 # Five-seed validation reference
 
-This document summarizes the five-seed evaluation reported in the SoftwareX manuscript. The new standalone repository includes the corresponding source code and a workflow to independently regenerate the results. **The figures below are reference results from the manuscript, not a claim that the new repository has already completed its own validation run.** Once the new CI runs finish, their own run URLs and artifacts should be linked here.
+This document summarizes the five-seed evaluation reported in the SoftwareX manuscript. The standalone repository contains the source code, the complete reproduction workflow and independently verified outputs. **Verified on the clean repository:** [GitHub Actions run 43808723741](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43808723741) successfully completed all three independent five-seed controllers and baseline evaluations. The downloaded new evaluation and baseline CSVs reproduce the means and operation counts reported below.
 
 All methods used seeds 42–46, five policy-development episodes, two full autoencoder epochs, one update epoch and the operation-count reward. Test data were held out of controller action selection.
 
