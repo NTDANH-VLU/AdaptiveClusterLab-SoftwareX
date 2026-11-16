@@ -4,9 +4,8 @@ UCI ElectricityLoadDiagrams20112014, ID 321:
 https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014
 (DOI: 10.24432/C58C86).
 
-**Validated:** The full original UCI data was successfully processed,
-tested and evaluated on five seeds (42–46).
-[Verified workflow](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43692866424);
+**Reproduction:** The five-seed protocol described here was used for the manuscript. Use the clean-repository workflow to independently rerun and verify the results.
+[Reproduction workflows](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/workflows/five-seed.yml);
 [full five-seed findings](ELECTRICITY_FIVE_SEED_RESULTS.md).
 
 The source `LD2011_2014.txt` is a semicolon-delimited, comma-decimal
