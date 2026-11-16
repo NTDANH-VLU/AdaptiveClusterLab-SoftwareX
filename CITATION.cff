@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use AdaptiveClusterLab, cite the v1.0.0 release and the repository. No archival DOI is assigned."
+type: software
+title: "AdaptiveClusterLab: Reproducible configuration-adaptive and memory-aware streaming clustering"
+authors:
+  - family-names: Nguyen
+    given-names: Anh Thi Diem
+  - family-names: Vo
+    given-names: Tham
+  - family-names: Hoang
+    given-names: Vinh Truong
+repository-code: "https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX"
+url: "https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/releases/tag/v1.0.0"
+version: "1.0.0"
+keywords:
+  - adaptive clustering
+  - reproducible research
+  - reinforcement learning
+  - concept drift
+  - research software
