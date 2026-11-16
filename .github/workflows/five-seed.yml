@@ -1,6 +1,10 @@
 name: Five-seed SoftwareX reproducibility
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/five-seed.yml'
 jobs:
   reproduce:
     strategy:
