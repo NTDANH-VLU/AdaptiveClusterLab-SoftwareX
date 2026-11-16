@@ -1,18 +1,20 @@
-# Five-seed controller validation across three datasets
+# Five-seed validation reference
 
-These are the results reported in the SoftwareX manuscript. Every controller experiment uses seeds **42, 43, 44, 45, 46**, five policy-development episodes, two full AE training epochs, and the `operation_counts` reward. The evaluation split is held out from action selection. The five-seed runs are short-budget software evaluations, not comparisons with fully trained published Hybrid-RL or CM-HRL neural policies.
+This document summarizes the five-seed evaluation reported in the SoftwareX manuscript. The new standalone repository includes the corresponding source code and a workflow to independently regenerate the results. **The figures below are reference results from the manuscript, not a claim that the new repository has already completed its own validation run.** Once the new CI runs finish, their own run URLs and artifacts should be linked here.
 
-| Dataset | GitHub Actions run | Held-out batches per method | Development / evaluation | Per-partition cap |
-| --- | --- | ---: | --- | ---: |
-| Online Retail II | [43694292478](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43694292478) | 60 | 12 / 12 months | 160 |
-| Reduced DAMADICS | [43694295584](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43694295584) | 20 | 4 / 4 source-order blocks | 110 |
-| Electricity | [43692866424](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43692866424) | 60 | 12 / 12 months | 110 |
+All methods used seeds 42–46, five policy-development episodes, two full autoencoder epochs, one update epoch and the operation-count reward. Test data were held out of controller action selection.
+
+| Dataset | Development / evaluation | Held-out evaluations per method | Sample cap per partition |
+| --- | --- | ---: | ---: |
+| UCI Online Retail II | 12 / 12 monthly batches | 60 | 160 |
+| Reduced FURAKI DAMADICS | 4 / 4 blocks in file order | 20 | 110 |
+| UCI Electricity | 12 / 12 monthly batches | 60 | 110 |
 
 ## Controller results
 
-Each policy's Silhouette and Davies–Bouldin index (DBI) is the mean over its held-out batches. For DBI, undefined values are excluded. The action counts show **full AE fits / updates / whole-model reuses** across five seeds.
+The action counts are full AE fits / model updates / real model reuses.
 
-| Dataset | Policy | Silhouette ↑ | DBI ↓ | Fits / updates / reuses |
+| Dataset | Method | Mean Silhouette (higher) | Mean DBI (lower) | Fits / updates / reuses |
 | --- | --- | ---: | ---: | --- |
 | Retail II | Always retrain | 0.28207 | 1.34157 | 60 / 0 / 0 |
 | Retail II | Always update | 0.25795 | 1.34332 | 0 / 60 / 0 |
@@ -21,7 +23,7 @@ Each policy's Silhouette and Davies–Bouldin index (DBI) is the mean over its h
 | Retail II | Q-learning + gate | 0.26218 | 1.41749 | 35 / 16 / 9 |
 | DAMADICS | Always retrain | 0.70952 | 0.50884 | 20 / 0 / 0 |
 | DAMADICS | Always update | 0.40945 | 1.20998 | 0 / 20 / 0 |
-| DAMADICS | Always reuse | −0.60733 | 1.97495 | 0 / 0 / 20 |
+| DAMADICS | Always reuse | -0.60733 | 1.97495 | 0 / 0 / 20 |
 | DAMADICS | Q-learning | 0.62112 | 0.70925 | 16 / 4 / 0 |
 | DAMADICS | Q-learning + gate | 0.62112 | 0.70925 | 16 / 4 / 0 |
 | Electricity | Always retrain | 0.35490 | 1.50083 | 60 / 0 / 0 |
@@ -30,26 +32,24 @@ Each policy's Silhouette and Davies–Bouldin index (DBI) is the mean over its h
 | Electricity | Q-learning | 0.29996 | 1.35829 | 25 / 6 / 29 |
 | Electricity | Q-learning + gate | 0.28844 | 1.54943 | 28 / 27 / 5 |
 
-The controller makes real reuse decisions, but this does not mean overall quality or runtime improves. Mean Silhouette is lower than always retraining for all three domains. Reuse is especially harmful on the reduced DAMADICS dataset. The DAMADICS controller results include **14 undefined DBI values among 100 evaluations**; Electricity has 5 among 300, and Retail II has none. The DAMADICS row order is not the original timestamped industrial sequence.
+Unreported DBI values are omitted from mean DBI: 14 of 100 reduced DAMADICS controller evaluations and 5 of 300 Electricity evaluations have undefined DBI. Reuse reduces full-fit counts but does not establish savings in measured runtime or superior overall clustering geometry.
 
-## K-Means reference baselines
+## Reference K-Means baselines
 
-These are separate models, each assessed over five seeds and two cluster counts (K = 3, 5).
+| Dataset | Method | Held-out runs | Silhouette | DBI |
+| --- | --- | ---: | ---: | ---: |
+| Retail II | Frozen | 120 | 0.11500 | 1.33304 |
+| Retail II | Refit | 120 | 0.30021 | 1.11551 |
+| Retail II | Memory gate | 120 | 0.31671 | 1.09288 |
+| DAMADICS | Frozen | 40 | 0.23723 | 1.74192 |
+| DAMADICS | Refit | 40 | 0.58755 | 0.59078 |
+| DAMADICS | Memory gate | 40 | 0.63196 | 0.58928 |
+| Electricity | Frozen | 120 | 0.30942 | 1.08626 |
+| Electricity | Refit | 120 | 0.32012 | 1.16495 |
+| Electricity | Memory gate | 120 | 0.32607 | 1.16538 |
 
-| Dataset | Method | Held-out evaluations | Silhouette ↑ | DBI ↓ | Additional measure |
-| --- | --- | ---: | ---: | ---: | --- |
-| Retail II | Frozen | 120 | 0.11500 | 1.33304 | Temporal ARI 0.29132 |
-| Retail II | Refit | 120 | 0.30021 | 1.11551 | Temporal ARI 0.10552 |
-| Retail II | Memory gate | 120 | 0.31671 | 1.09288 | Temporal ARI 0.13522 |
-| DAMADICS | Frozen | 40 | 0.23723 | 1.74192 | Fault ARI 0.14101 |
-| DAMADICS | Refit | 40 | 0.58755 | 0.59078 | Fault ARI 0.33960 |
-| DAMADICS | Memory gate | 40 | 0.63196 | 0.58928 | Fault ARI 0.34082 |
-| Electricity | Frozen | 120 | 0.30942 | 1.08626 | Temporal ARI 0.89854 |
-| Electricity | Refit | 120 | 0.32012 | 1.16495 | Temporal ARI 0.79490 |
-| Electricity | Memory gate | 120 | 0.32607 | 1.16538 | Temporal ARI 0.81724 |
+The memory gate still fits a new K-Means candidate on every evaluation block. The measured Silhouette therefore should not be used to claim reduced K-Means training cost.
 
-The baseline source runs are [Retail II #43694628784](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43694628784), [DAMADICS #43694631491](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43694631491), and [Electricity #43692866424](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43692866424).
+## Regeneration
 
-The memory-gate baseline still fits a candidate at every evaluation step: 120 times on Retail II, 40 on DAMADICS, and 120 on Electricity. Its Silhouette scores therefore should not be described as evidence of lower K-Means training cost.
-
-The output CSVs, per-run manifests, and provenance are bundled with [GitHub Release v1.0.0](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/releases/tag/v1.0.0). The original experiment runs are retained as links for traceability.
+Run `python scripts/reproduce.py DATASET --download --cost-mode operation_counts --seeds 42 43 44 45 46` with `DATASET` equal to `retail`, `damadics`, or `electricity`. Alternatively, launch the GitHub Actions workflow `Five-seed SoftwareX reproducibility` in this repository. Data preparation details are in the dataset-specific documents.
