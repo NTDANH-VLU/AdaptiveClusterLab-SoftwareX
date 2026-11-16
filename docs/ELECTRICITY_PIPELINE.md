@@ -5,8 +5,8 @@ https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014
 (DOI: 10.24432/C58C86).
 
 **Reproduction:** The five-seed protocol described here was used for the manuscript. Use the clean-repository workflow to independently rerun and verify the results.
-[Reproduction workflows](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/workflows/five-seed.yml);
-[full five-seed findings](ELECTRICITY_FIVE_SEED_RESULTS.md).
+[verified five-seed run](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43808723741);
+[five-seed results and comparisons](THREE_DATASET_FIVE_SEED_VALIDATION.md).
 
 The source `LD2011_2014.txt` is a semicolon-delimited, comma-decimal
 text file with 370 source consumer columns and 15-minute kW observations.
