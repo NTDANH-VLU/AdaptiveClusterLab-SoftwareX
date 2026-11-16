@@ -25,6 +25,19 @@ jobs:
         run: uv sync --python 3.11 --all-extras --locked
       - name: Run held-out validation on public data
         run: uv run --all-extras --locked python scripts/reproduce.py ${{ matrix.dataset }} --download --cost-mode operation_counts --seeds 42 43 44 45 46
+      - name: Run independent five-seed K-Means baselines
+        shell: bash
+        run: |
+          if [ "${{ matrix.dataset }}" = "retail" ]; then
+            uv run --all-extras --locked python benchmarks/temporal_retail_baselines.py \
+              --batch-dir results/retail/batches --prefix retail --months 24 \
+              --development-months 12 --seeds 42 43 44 45 46 \
+              --output results/retail/temporal_baselines.csv
+          elif [ "${{ matrix.dataset }}" = "damadics" ]; then
+            uv run --all-extras --locked python benchmarks/damadics_baselines.py \
+              --input data/raw/DAMADICS.csv --seeds 42 43 44 45 46 \
+              --output results/damadics/baselines_5seed.csv
+          fi
       - name: Archive results
         if: always()
         uses: actions/upload-artifact@v4
@@ -35,5 +48,6 @@ jobs:
             results/${{ matrix.dataset }}/summary.json
             results/${{ matrix.dataset }}/batches/manifest.csv
             results/${{ matrix.dataset }}/temporal_baselines.csv
+            results/${{ matrix.dataset }}/baselines_5seed.csv
           if-no-files-found: warn
           retention-days: 30
