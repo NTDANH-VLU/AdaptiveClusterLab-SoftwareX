@@ -1,0 +1,30 @@
+name: Verify install and minimal reproduction
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.10.0'
+      - name: Install pinned research dependencies
+        run: uv sync --python 3.11 --all-extras --locked
+      - name: Test entire package
+        run: uv run --all-extras --locked python -m pytest -q
+      - name: Reproduce synthetic quickstart
+        run: uv run --all-extras --locked python scripts/reproduce.py demo --quick
+      - name: Guard against unpublished data or notebooks
+        run: |
+          python - <<'PY'
+          import subprocess
+          names=subprocess.check_output(["git","ls-files"],text=True).splitlines()
+          assert not any(x.endswith(".ipynb") or x.startswith("data/raw/") for x in names)
+          print(f"Checked {len(names)} tracked files; no notebooks or raw datasets")
+          PY

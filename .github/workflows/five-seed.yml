@@ -1,0 +1,35 @@
+name: Five-seed SoftwareX reproducibility
+on:
+  workflow_dispatch:
+jobs:
+  reproduce:
+    strategy:
+      fail-fast: false
+      matrix:
+        dataset: [retail, damadics, electricity]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.10.0'
+      - name: Install locked dependencies
+        run: uv sync --python 3.11 --all-extras --locked
+      - name: Run held-out validation on public data
+        run: uv run --all-extras --locked python scripts/reproduce.py ${{ matrix.dataset }} --download --cost-mode operation_counts --seeds 42 43 44 45 46
+      - name: Archive results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.dataset }}-five-seed
+          path: |
+            results/${{ matrix.dataset }}/evaluation.csv
+            results/${{ matrix.dataset }}/summary.json
+            results/${{ matrix.dataset }}/batches/manifest.csv
+            results/${{ matrix.dataset }}/temporal_baselines.csv
+          if-no-files-found: warn
+          retention-days: 30
