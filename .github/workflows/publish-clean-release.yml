@@ -1,0 +1,88 @@
+name: Publish clean v1.0.0 release with verified results
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-clean-release.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.10.0'
+      - name: Verify clean source and locked dependencies
+        run: |
+          uv sync --python 3.11 --all-extras --locked
+          uv run --all-extras --locked python -m pytest -q
+          python - <<'PY'
+          import subprocess
+          paths=subprocess.check_output(["git","ls-files"],text=True).splitlines()
+          assert not any(p.endswith(".ipynb") or p.startswith("data/raw/") for p in paths)
+          assert "LICENSE" in paths and "uv.lock" in paths
+          print("Source release contains no private notebook or raw data file")
+          PY
+      - name: Download independently rerun five-seed results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          mkdir -p release_data/retail release_data/damadics release_data/electricity
+          gh run download 43808723741 -R "${GITHUB_REPOSITORY}" -n retail-five-seed -D release_data/retail
+          gh run download 43808723741 -R "${GITHUB_REPOSITORY}" -n damadics-five-seed -D release_data/damadics
+          gh run download 43808723741 -R "${GITHUB_REPOSITORY}" -n electricity-five-seed -D release_data/electricity
+      - name: Validate output counts and build reproducibility archive
+        run: |
+          python - <<'PY'
+          import csv,hashlib,io,json,pathlib,zipfile
+          root=pathlib.Path("release_data")
+          manifest={}
+          expect={"retail":300,"damadics":100,"electricity":300}
+          for dataset,count in expect.items():
+              folder=root/dataset
+              evaluation=folder/"evaluation.csv"
+              assert evaluation.exists(), f"missing {evaluation}"
+              with evaluation.open(encoding="utf-8",newline="") as f:
+                  rows=list(csv.DictReader(f))
+              assert len(rows)==count, (dataset,len(rows),count)
+              assert {int(row["seed"]) for row in rows}=={42,43,44,45,46}
+              assert (folder/"summary.json").exists()
+              assert (folder/("baselines_5seed.csv" if dataset=="damadics" else "temporal_baselines.csv")).exists()
+          files=sorted(p for p in root.rglob("*") if p.is_file())
+          for p in files:
+              manifest[str(p.relative_to(root))]=hashlib.sha256(p.read_bytes()).hexdigest()
+          provenance={"version":"1.0.0","source_repository":"NTDANH-VLU/AdaptiveClusterLab-SoftwareX",
+                      "validation_run":43808723741,"five_seeds":[42,43,44,45,46],
+                      "reward_mode":"operation_counts","file_sha256":manifest}
+          with zipfile.ZipFile("AdaptiveClusterLab-v1.0.0-five-seed-results.zip","w",zipfile.ZIP_DEFLATED) as z:
+              for p in files:z.write(p,p.relative_to(root))
+              z.writestr("PROVENANCE.json",json.dumps(provenance,indent=2))
+          print("Archived",len(files),"files from new repository only")
+          PY
+      - name: Create immutable named release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view v1.0.0 --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to replace its results"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a v1.0.0 -m "AdaptiveClusterLab SoftwareX clean independent release 1.0.0"
+          git push origin refs/tags/v1.0.0
+          gh release create v1.0.0 AdaptiveClusterLab-v1.0.0-five-seed-results.zip uv.lock \
+            --repo "${GITHUB_REPOSITORY}" --verify-tag \
+            --title "AdaptiveClusterLab v1.0.0" \
+            --notes "Clean standalone MIT software release. Includes reproducibility data and SHA-256 manifest from the independent five-seed run 43808723741, with Retail II, reduced DAMADICS and UCI Electricity. No previous repository git history is used or included. Mean clustering quality does not establish uniform controller superiority."
