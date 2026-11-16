@@ -10,7 +10,7 @@ Protocol: eight consecutive reduced-dataset blocks of 450 records; four developm
 
 ## Verified GitHub Actions execution
 
-Workflow: `.github/workflows/damadics-benchmark.yml`. Run ID: `43676744668`, **completed successfully**. CSV and stdout summary are preserved in workflow artifact `damadics-baseline-results`. See [GitHub Actions run](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43676744668).
+Workflow: `.github/workflows/damadics-benchmark.yml`. Run ID: `43676744668`, **completed successfully**. CSV and stdout summary are preserved in workflow artifact `damadics-baseline-results`. See GitHub Actions run (earlier reference result).
 
 Results are means across **24 held-out block × K × seed evaluation combinations per method**:
 
