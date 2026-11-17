@@ -78,3 +78,43 @@ or reuse mechanism reflect these audited runs.** Retain published tag v1.0.0
 unchanged. Before a new final release, consider an explicit trained-action
 fallback/coverage policy for unseen states, then rerun all comparisons and
 issue a fresh tagged version with the final CSV files.
+
+
+## Follow-up: trained-action-only coverage ablation
+
+**Independent verification completed:** [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375), all three dataset jobs passed. The tested commit is `e60c71aa68494d6dc1e7d618464485197ac682d8`. Its artifacts contain full five-seed CSV files, the unchanged K-Means comparisons, and `audit_report.json`. No raw private data were committed.
+
+Two additional exploratory policies:
+
+- `q_learning_covered`: retains K in {3,5}, d in {8,12}, but permits an evaluation action only when that exact **state–action pair** had a Q update during policy development. If none of the valid actions was trained, it falls back to `(K=3,d=8,retrain)`, logging `q_coverage_fallback=True`.
+- `q_learning_fixed_covered`: applies the same coverage rule within fixed K=3,d=8, to separate action adaptation from configuration selection.
+
+| Dataset | Policy | Valid Silhouette | Degenerate / total | Full AE fits | Updates | Reuses | Reuses with Q training | Coverage fallbacks |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Retail II | Always retrain | 0.2821 | 0/60 | 60 | 0 | 0 | n/a | 0 |
+| Retail II | Q-learning, covered | 0.2678 | 0/60 | 33 | 7 | 20 | 20/20 | 5 |
+| Retail II | Fixed K/d, covered | 0.2554 | 0/60 | 16 | 27 | 17 | 17/17 | 6 |
+| DAMADICS | Always retrain | 0.7095 | 0/20 | 20 | 0 | 0 | n/a | 0 |
+| DAMADICS | Q-learning, covered | 0.5997 | 0/20 | 16 | 4 | 0 | n/a | 0 |
+| DAMADICS | Fixed K/d, covered | 0.5526 | 0/20 | 8 | 12 | 0 | n/a | 0 |
+| Electricity | Always retrain | 0.3779 | 1/60 | 60 | 0 | 0 | n/a | 0 |
+| Electricity | Q-learning, covered | 0.3684 | 1/60 | 49 | 0 | 11 | 11/11 | 28 |
+| Electricity | Fixed K/d, covered | 0.3728 | 0/60 | 54 | 6 | 0 | n/a | 33 |
+
+The covered action policy eliminates **untrained Q reuse** by construction,
+while exposing how often the model must fall back to retraining. Its results
+remain below always retraining in mean valid Silhouette on the three datasets.
+The percentages of full fits avoided relative to always retrain are 45%
+(Retail II), 20% (DAMADICS), and about 18.3% (Electricity); these describe
+full-AE-fit counts, **not measured total runtime savings**.
+
+The fixed-K/d covered ablation is particularly instructive: on Electricity,
+it gives **zero** covered reuses and 33 fallbacks, where the previous
+unrestricted fixed-K/d policy produced 13 reuses from untrained Q actions.
+Thus the earlier result should not be interpreted as evidence of learned reuse.
+
+**Conclusion:** the three originally raised validity issues are now auditable,
+and a conservative action-coverage alternative has been evaluated. The new
+results must be reviewed and incorporated into the manuscript before
+submission. The public `v1.0.0` tag is intentionally unchanged; these changes
+currently live on `main` and need a fresh versioned release if adopted.
