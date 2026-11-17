@@ -1,3 +1,9 @@
+> **HISTORICAL v1.0.0 RESULTS — NOT the revised SoftwareX manuscript protocol.**
+> The old table below uses penalized Silhouette averages and deterministic index-based Q ties.
+> For the audited, corrected five-seed study (including valid Silhouette, Q-action coverage and matched K/d),
+> use [the new audit report](Q_POLICY_AUDIT_2026_11_17.md) and
+> [committed CSVs](../reproducibility/audited-2026-11-17/PROVENANCE.json).
+
 # Five-seed validation reference
 
 This document summarizes the five-seed evaluation reported in the SoftwareX manuscript. The standalone repository contains the source code, the complete reproduction workflow and independently verified outputs. **Verified on the clean repository:** [GitHub Actions run 43808723741](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43808723741) successfully completed all three independent five-seed controllers and baseline evaluations. The downloaded new evaluation and baseline CSVs reproduce the means and operation counts reported below.
