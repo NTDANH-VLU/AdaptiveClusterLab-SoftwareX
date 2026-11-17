@@ -1,4 +1,4 @@
-name: Five-seed SoftwareX reproducibility
+name: Audited five-seed SoftwareX reproducibility
 on:
   workflow_dispatch:
   push:
@@ -38,6 +38,9 @@ jobs:
               --input data/raw/DAMADICS.csv --seeds 42 43 44 45 46 \
               --output results/damadics/baselines_5seed.csv
           fi
+      - name: Audit degenerate clusters, Q ties and fixed-configuration policy
+        if: success()
+        run: uv run --all-extras --locked python scripts/audit_results.py results/${{ matrix.dataset }}/evaluation.csv
       - name: Archive results
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,6 +49,7 @@ jobs:
           path: |
             results/${{ matrix.dataset }}/evaluation.csv
             results/${{ matrix.dataset }}/summary.json
+            results/${{ matrix.dataset }}/audit_report.json
             results/${{ matrix.dataset }}/batches/manifest.csv
             results/${{ matrix.dataset }}/temporal_baselines.csv
             results/${{ matrix.dataset }}/baselines_5seed.csv
