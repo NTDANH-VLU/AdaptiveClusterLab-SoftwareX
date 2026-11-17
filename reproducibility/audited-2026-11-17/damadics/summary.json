@@ -1,0 +1,166 @@
+{
+  "source_csv": "results/damadics/evaluation.csv",
+  "note": "Descriptive exploratory means only; no statistically validated superiority.",
+  "methods": {
+    "always_retrain": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.7095196068286895,
+      "test_silhouette_valid_mean": 0.7095196068286895,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.508844832904792,
+      "reuses": 0,
+      "ae_full_fits": 20,
+      "ae_updates": 0,
+      "evaluation_decision_seconds": 0.26350663300000576
+    },
+    "reuse_when_available": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": -0.6073314934037626,
+      "test_silhouette_valid_mean": 0.30889502198745805,
+      "test_degenerate_count": 14,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 1.9749462937598157,
+      "reuses": 20,
+      "ae_full_fits": 0,
+      "ae_updates": 0,
+      "evaluation_decision_seconds": 0.04514530200000877
+    },
+    "always_update": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.4094480488449335,
+      "test_silhouette_valid_mean": 0.4094480488449335,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 1.209980494191649,
+      "reuses": 0,
+      "ae_full_fits": 0,
+      "ae_updates": 20,
+      "evaluation_decision_seconds": 0.17426880399997913
+    },
+    "q_learning": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.5997494131326675,
+      "test_silhouette_valid_mean": 0.5997494131326675,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.7252712179878154,
+      "reuses": 0,
+      "ae_full_fits": 16,
+      "ae_updates": 4,
+      "evaluation_decision_seconds": 0.25345399500007204
+    },
+    "q_learning_gated": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.5997494131326675,
+      "test_silhouette_valid_mean": 0.5997494131326675,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.7252712179878154,
+      "reuses": 0,
+      "ae_full_fits": 16,
+      "ae_updates": 4,
+      "evaluation_decision_seconds": 0.2518566020000037
+    },
+    "q_learning_fixed": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.5525749534368515,
+      "test_silhouette_valid_mean": 0.5525749534368515,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.9087892695323244,
+      "reuses": 0,
+      "ae_full_fits": 8,
+      "ae_updates": 12,
+      "evaluation_decision_seconds": 0.2036929969999477
+    },
+    "q_learning_covered": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.5997494131326675,
+      "test_silhouette_valid_mean": 0.5997494131326675,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.7252712179878154,
+      "reuses": 0,
+      "ae_full_fits": 16,
+      "ae_updates": 4,
+      "evaluation_decision_seconds": 0.24938414599999703
+    },
+    "q_learning_fixed_covered": {
+      "n_evaluations": 20,
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "test_silhouette_penalized_mean": 0.5525749534368515,
+      "test_silhouette_valid_mean": 0.5525749534368515,
+      "test_degenerate_count": 0,
+      "q_unseen_count": 0,
+      "q_tie_break_count": 0,
+      "test_dbi_mean": 0.9087892695323244,
+      "reuses": 0,
+      "ae_full_fits": 8,
+      "ae_updates": 12,
+      "evaluation_decision_seconds": 0.20378296299999477
+    }
+  }
+}

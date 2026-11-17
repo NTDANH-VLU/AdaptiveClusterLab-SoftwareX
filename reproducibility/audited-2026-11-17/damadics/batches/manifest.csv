@@ -1,0 +1,9 @@
+block,samples,n_features,phase,file
+0,450,32,development,damadics_00.npz
+1,450,32,development,damadics_01.npz
+2,450,32,development,damadics_02.npz
+3,450,32,development,damadics_03.npz
+4,450,32,evaluation,damadics_04.npz
+5,450,32,evaluation,damadics_05.npz
+6,450,32,evaluation,damadics_06.npz
+7,450,32,evaluation,damadics_07.npz

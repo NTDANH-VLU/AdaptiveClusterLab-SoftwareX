@@ -1,0 +1,33 @@
+{
+  "verified_workflow_run": 44039942375,
+  "verified_workflow_commit": "e60c71aa68494d6dc1e7d618464485197ac682d8",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "cost_mode": "operation_counts",
+  "ae_full_epochs": 2,
+  "ae_update_epochs": 1,
+  "method": "audited Q-learning and trained-action coverage ablations",
+  "note": "Historical v1.0.0 release does not include this protocol. See main or a pinned audited commit.",
+  "sha256": {
+    "damadics/audit_report.json": "6648d90c5541566f97cd6227a88e501f00becf8b982f9ab2c7ea6ce41331ef2d",
+    "damadics/baselines_5seed.csv": "642e1e72b01e2c5407ed81a785d8f6cf6dbc8b392fd61e602fee6e35206f46a2",
+    "damadics/batches/manifest.csv": "ffdd4c25d8fd83f04896d67f91866227d99fc2cb87a8a0a44ddee6e0e1d24ff4",
+    "damadics/evaluation.csv": "a8f464868b571e140cb73cab2b262c62256e75d9ad4bd460adfd89ab933e63fd",
+    "damadics/summary.json": "4e5c45559e735318904f401767dbcc69cf8b52fde5059a1bd0b6131206fd6912",
+    "electricity/audit_report.json": "40bb5db38286389a297a70d7617015b5c5f7c47fb4de1656240573e67c02f47e",
+    "electricity/batches/manifest.csv": "89282d4285e4e723065d1370a3c25b16232fe026adb5bb8181afb6907149f7b9",
+    "electricity/evaluation.csv": "e622e9a48235b19bd2147bc89b2800aaad5c6d0b4f3fb6cef50b6744fdbeaa16",
+    "electricity/summary.json": "5c3886d5805b8c1682f7728acba0fad05b6dd06440b4c3fb7eebe734fbcfe900",
+    "electricity/temporal_baselines.csv": "5d5c3768d2fc59b6f36841af9ee90813ecc8f597e15477127fcbe8ac8d2bfb0a",
+    "retail/audit_report.json": "3680f837d0ac00989756bb3f296bffee9165fd3e687effee295e2687f85f08fd",
+    "retail/batches/manifest.csv": "d4e726f77979cfceb5c9b51641c4d5bcaa7e6a2dc859417dd20e9985002130ea",
+    "retail/evaluation.csv": "098f4a2a5c3270c77ab61cbdeee345bfe2b880813d7e973a277b03dcdf9236d0",
+    "retail/summary.json": "6da0f5fa590b911919f7276cf87dd3a9b92700f065c3b91badfb810e236a97aa",
+    "retail/temporal_baselines.csv": "140a1a95a89b71cac54e441a0f7d6254f4822bb117af0a0f3a524cd7a6864068"
+  }
+}
