@@ -253,7 +253,7 @@ class TabularQLearning:
             self.visits[state] = np.zeros(len(ACTIONS), dtype=np.int64)
         return self.q[state]
 
-    def choose_with_info(self, state, valid, epsilon=0.0):
+    def choose_with_info(self, state, valid, epsilon=0.0, require_trained=False):
         """Return the chosen action and an auditable diagnostic of the decision.
 
         Q-values for unseen states start at zero. Ties are broken with the
@@ -263,14 +263,28 @@ class TabularQLearning:
             raise ValueError("No valid actions")
         unseen = state not in self.q
         values = self.values(state)
-        best = max(float(values[i]) for i in valid)
-        tied = [i for i in valid if np.isclose(values[i], best, rtol=0, atol=1e-12)]
-        exploratory = bool(self.rng.random() < epsilon)
-        action = int(self.rng.choice(valid if exploratory else tied))
-        ranked = sorted((float(values[i]) for i in valid), reverse=True)
+        eligible = ([i for i in valid if self.visits[state][i] > 0]
+                    if require_trained else list(valid))
+        fallback = require_trained and not eligible
+        if fallback:
+            retrain = ACTIONS.index((3, 8, "retrain"))
+            if retrain not in valid:
+                retrain = next(i for i in valid if ACTIONS[i][2] == "retrain")
+            action = int(retrain)
+            best = float("nan")
+            tied = []
+            exploratory = False
+            ranked = []
+        else:
+            best = max(float(values[i]) for i in eligible)
+            tied = [i for i in eligible if np.isclose(values[i], best, rtol=0, atol=1e-12)]
+            exploratory = bool(self.rng.random() < epsilon)
+            action = int(self.rng.choice(eligible if exploratory else tied))
+            ranked = sorted((float(values[i]) for i in eligible), reverse=True)
         return action, dict(
             q_state=str(state), q_unseen_state=bool(unseen),
             q_tie_count=len(tied), q_tie_break=bool(not exploratory and len(tied)>1),
+            q_coverage_fallback=bool(fallback),
             q_exploration=exploratory,
             q_action_visited=bool(self.visits[state][action] > 0),
             q_action_visit_count=int(self.visits[state][action]),
@@ -339,7 +353,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         raise ValueError("cost_mode must be wall_time or operation_counts")
     development_start = time.perf_counter()
     learner = TabularQLearning(seed)
-    if policy in ("q_learning", "q_learning_gated", "q_learning_fixed"):
+    if policy in ("q_learning", "q_learning_gated", "q_learning_fixed", "q_learning_covered", "q_learning_fixed_covered"):
         # Repeated development scenarios; no evaluation observation is used.
         # Different stochastic splits per episode, policy persists across episodes.
         for episode in range(development_episodes):
@@ -351,7 +365,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
                 train, val, test = split_three(x, seed + episode * 1000 + t)
                 state = environment.state(train)
                 valid = environment.possible(train)
-                if policy == "q_learning_fixed":
+                if policy in ("q_learning_fixed", "q_learning_fixed_covered"):
                     valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
                 action = learner.choose(state, valid, epsilon=max(.1, .8 - episode * .12))
                 result = environment.act(train, val, test, action, regime=regime)
@@ -366,7 +380,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
                 else:
                     next_state = state
                 next_valid = environment.possible(next_train) if t + 1 < development_len else environment.possible(train)
-                if policy == "q_learning_fixed":
+                if policy in ("q_learning_fixed", "q_learning_fixed_covered"):
                     next_valid = [i for i in next_valid if ACTIONS[i][:2] == (3, 8)]
                 learner.learn(state, action, reward, next_state, next_valid)
     development_seconds = time.perf_counter() - development_start
@@ -381,11 +395,14 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         tr, val, test = split_three(x, seed + 99999 + t)
         state = environment.state(tr)
         valid = environment.possible(tr)
-        if policy == "q_learning_fixed":
+        if policy in ("q_learning_fixed", "q_learning_fixed_covered"):
             valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
-        action = (learner.choose(state, valid, epsilon=0)
-                  if policy in ("q_learning", "q_learning_gated", "q_learning_fixed")
-                  else fixed_action(valid, policy))
+        if policy.startswith("q_learning"):
+            action, _ = learner.choose_with_info(
+                state, valid, epsilon=0,
+                require_trained=policy in ("q_learning_covered", "q_learning_fixed_covered"))
+        else:
+            action = fixed_action(valid, policy)
         environment.act(tr, val, test, action, regime=regime)
     warmup_seconds = time.perf_counter() - warmup_start
     records = []
@@ -395,13 +412,16 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         decision_start = time.perf_counter()
         state = environment.state(tr)
         valid = environment.possible(tr)
-        if policy == "q_learning_fixed":
+        if policy in ("q_learning_fixed", "q_learning_fixed_covered"):
             valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
-        if policy in ("q_learning", "q_learning_gated", "q_learning_fixed"):
-            action, decision_info = learner.choose_with_info(state, valid, epsilon=0)
+        if policy.startswith("q_learning"):
+            action, decision_info = learner.choose_with_info(
+                state, valid, epsilon=0,
+                require_trained=policy in ("q_learning_covered", "q_learning_fixed_covered"))
         else:
             action = fixed_action(valid, policy)
             decision_info = dict(q_state=str(state), q_unseen_state=False,
+                                 q_coverage_fallback=False,
                                  q_tie_count=0, q_tie_break=False, q_exploration=False,
                                  q_action_visited=False, q_action_visit_count=0,
                                  q_selected_value=float("nan"), q_best_value=float("nan"),
