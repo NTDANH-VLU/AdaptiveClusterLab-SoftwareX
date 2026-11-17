@@ -1,0 +1,68 @@
+name: Publish audited 1.1.0 source and reproducibility capsule
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v1.1.0.yml'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.10.0'
+      - name: Verify exact locked source and tests
+        run: |
+          uv sync --python 3.11 --all-extras --locked
+          uv run --all-extras --locked python -m pytest -q
+          uv run --all-extras --locked python scripts/reproduce.py demo --quick --cost-mode operation_counts
+      - name: Check audited result provenance
+        run: |
+          python - <<'PY'
+          import csv, json
+          from pathlib import Path
+          root=Path('reproducibility/audited-2026-11-17')
+          manifest=json.loads((root/'PROVENANCE.json').read_text())
+          assert manifest['verified_workflow_run']==44039942375
+          for ds,n in [('retail',60),('damadics',20),('electricity',60)]:
+              with (root/ds/'evaluation.csv').open(newline='') as f:
+                  rows=list(csv.DictReader(f))
+              assert len(rows)==8*n,(ds,len(rows))
+              assert (root/ds/'audit_report.json').is_file()
+          PY
+      - name: Archive independently verified data outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          root=Path('reproducibility/audited-2026-11-17')
+          with zipfile.ZipFile('AdaptiveClusterLab-v1.1.0-Audited-Data.zip','w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():z.write(p,p.as_posix())
+          PY
+      - name: Publish immutable tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin refs/tags/v1.1.0 >/dev/null 2>&1; then
+            echo 'Tag v1.1.0 already exists; abort rather than move it'
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a v1.1.0 -m "AdaptiveClusterLab v1.1.0: audited Q-learning, trained-action coverage, valid Silhouette and five-seed CSVs"
+          git push origin refs/tags/v1.1.0
+          gh release create v1.1.0 AdaptiveClusterLab-v1.1.0-Audited-Data.zip \
+            --title "AdaptiveClusterLab v1.1.0 – audited SoftwareX reproducibility" \
+            --notes "Audited research-workbench source with seeded Q tie-breaks, trained-action coverage, matched K/d baselines, valid Silhouette and degeneracy reporting, and archived five-seed results. See reproducibility/audited-2026-11-17/PROVENANCE.json. Historical v1.0.0 remains unchanged."
