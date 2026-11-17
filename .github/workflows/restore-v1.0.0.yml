@@ -1,0 +1,63 @@
+name: Restore user-requested v1.0.0 and remove unwanted v1.1.0
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restore-v1.0.0.yml'
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: '0.10.0'
+      - name: Verify restored package and audited data
+        run: |
+          uv sync --python 3.11 --all-extras --locked
+          uv run --all-extras --locked python -m pytest -q
+          uv run --all-extras --locked python scripts/reproduce.py demo --quick --cost-mode operation_counts
+          python - <<'PY'
+          from pathlib import Path
+          from adaptiveclusterlab import __version__
+          import json,csv
+          assert __version__ == '1.0.0'
+          root=Path('reproducibility/audited-2026-11-17')
+          assert json.loads((root/'PROVENANCE.json').read_text())['verified_workflow_run']==44039942375
+          for ds,n in [('retail',60),('damadics',20),('electricity',60)]:
+              with (root/ds/'evaluation.csv').open() as f:
+                  assert len(list(csv.DictReader(f))) == n*8
+          PY
+      - name: Package corrected v1.0.0 data
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          root=Path('reproducibility/audited-2026-11-17')
+          with zipfile.ZipFile('AdaptiveClusterLab-v1.0.0-Audited-Data.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for path in sorted(root.rglob('*')):
+                  if path.is_file():z.write(path,path.as_posix())
+          PY
+      - name: Delete unintended v1.1.0 and update original v1.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh release delete v1.1.0 --yes --cleanup-tag
+          git push origin :refs/tags/v1.1.0 || true
+          git tag -f -a v1.0.0 -m "AdaptiveClusterLab 1.0.0, audited revision requested by repository owner"
+          git push --force origin refs/tags/v1.0.0
+          gh release delete-asset v1.0.0 AdaptiveClusterLab-v1.0.0-five-seed-results.zip --yes || true
+          gh release upload v1.0.0 AdaptiveClusterLab-v1.0.0-Audited-Data.zip --clobber
+          gh release edit v1.0.0 --title "AdaptiveClusterLab v1.0.0 – audited source and reproducible results" \
+            --notes "Owner-requested update of the existing v1.0.0 release. This corrected source includes Q-action-coverage diagnostics, seeded tie-breaks, valid Silhouette/degenerate-cluster accounting and matched K/d controls. Five-seed CSVs and provenance are in reproducibility/audited-2026-11-17/. The tag was moved from an earlier v1.0.0 commit; refer to immutable Git commit hashes when comparing the historical and corrected sources."
