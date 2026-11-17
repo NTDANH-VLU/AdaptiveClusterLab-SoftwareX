@@ -241,6 +241,7 @@ class TabularQLearning:
 
     def __init__(self, seed=42, learning_rate=0.25, gamma=0.85):
         self.q = {}
+        self.visits = {}
         self.lr = float(learning_rate)
         self.gamma = float(gamma)
         self.rng = np.random.default_rng(seed)
@@ -249,6 +250,7 @@ class TabularQLearning:
     def values(self, state):
         if state not in self.q:
             self.q[state] = np.zeros(len(ACTIONS), dtype=np.float64)
+            self.visits[state] = np.zeros(len(ACTIONS), dtype=np.int64)
         return self.q[state]
 
     def choose_with_info(self, state, valid, epsilon=0.0):
@@ -269,7 +271,10 @@ class TabularQLearning:
         return action, dict(
             q_state=str(state), q_unseen_state=bool(unseen),
             q_tie_count=len(tied), q_tie_break=bool(not exploratory and len(tied)>1),
-            q_exploration=exploratory, q_selected_value=float(values[action]),
+            q_exploration=exploratory,
+            q_action_visited=bool(self.visits[state][action] > 0),
+            q_action_visit_count=int(self.visits[state][action]),
+            q_selected_value=float(values[action]),
             q_best_value=best,
             q_margin=float(ranked[0]-ranked[1]) if len(ranked)>1 else float("nan"),
             q_valid_values=json.dumps({str(i):float(values[i]) for i in valid}),
@@ -285,6 +290,7 @@ class TabularQLearning:
         current[action] += self.lr * (
             reward + self.gamma * future - current[action]
         )
+        self.visits[state][action] += 1
         self.updates += 1
 
 
@@ -397,6 +403,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
             action = fixed_action(valid, policy)
             decision_info = dict(q_state=str(state), q_unseen_state=False,
                                  q_tie_count=0, q_tie_break=False, q_exploration=False,
+                                 q_action_visited=False, q_action_visit_count=0,
                                  q_selected_value=float("nan"), q_best_value=float("nan"),
                                  q_margin=float("nan"), q_valid_values="{}")
         decision_seconds = time.perf_counter() - decision_start
