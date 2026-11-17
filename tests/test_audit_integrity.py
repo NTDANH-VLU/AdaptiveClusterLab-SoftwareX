@@ -47,3 +47,22 @@ def test_fixed_configuration_q_learning_is_restricted():
     assert all((r["k"], r["latent_dim"]) == (3, 8) for r in records)
     assert all("q_valid_values" in r and "q_unseen_state" in r for r in records)
     assert all("test_degenerate" in r and "test_silhouette_valid" in r for r in records)
+
+def test_untrained_q_action_falls_back_to_retraining():
+    learner = TabularQLearning(31)
+    valid = [ACTIONS.index((3,8,"reuse")), ACTIONS.index((3,8,"retrain"))]
+    choice, info = learner.choose_with_info((2,2,1), valid, require_trained=True)
+    assert ACTIONS[choice] == (3, 8, "retrain")
+    assert info["q_coverage_fallback"] and not info["q_action_visited"]
+    assert not info["q_tie_break"]
+
+
+def test_trained_q_action_is_only_candidate_when_coverage_required():
+    learner = TabularQLearning(31)
+    state = (2, 2, 1)
+    valid = [ACTIONS.index((3,8,"reuse")), ACTIONS.index((3,8,"retrain"))]
+    learner.values(state)[valid[0]] = 0.8
+    learner.visits[state][valid[0]] = 3
+    choice, info = learner.choose_with_info(state, valid, require_trained=True)
+    assert choice == valid[0]
+    assert info["q_action_visited"] and not info["q_coverage_fallback"]
