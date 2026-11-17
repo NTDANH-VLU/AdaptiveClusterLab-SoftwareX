@@ -9,7 +9,7 @@ The experimental controller uses tabular Q-learning and a clustering autoencoder
 Python 3.11 was used for the reproducibility checks. Install [uv](https://docs.astral.sh/uv/) and clone this standalone repository:
 
 ```bash
-git clone --branch v1.1.0 https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX.git
+git clone --branch v1.0.0 https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX.git
 cd AdaptiveClusterLab-SoftwareX
 uv sync --python 3.11 --all-extras --locked
 uv run --all-extras --locked python -m pytest -q
@@ -20,7 +20,7 @@ The synthetic demo needs no external dataset. To install with pip instead of uv,
 
 ## Audited source and reproduction results
 
-The `v1.0.0` release remains historical; `v1.1.0` contains the audited coverage experiment and committed datasets. The paper's audited revision is the `main` source with its permanently committed [five-seed evaluation CSVs and checksums](reproducibility/audited-2026-11-17/PROVENANCE.json), validated by [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375). Use immutable `v1.1.0` or its commit hash for exact reproduction; `main` can move.
+The updated `v1.0.0` release contains the audited action-coverage experiment and the reproducibility data. The previous v1.0.0 tag target was moved at the owner's request; the earlier historical code remains accessible by its original commit SHA. The paper's audited revision is the `main` source with its permanently committed [five-seed evaluation CSVs and checksums](reproducibility/audited-2026-11-17/PROVENANCE.json), validated by [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375). Use the updated `v1.0.0` release and its commit SHA for exact reproduction. The precise commit is preferable for long-term provenance if tags may be retargeted.
 
 ## Reproduce the paper experiments
 
@@ -60,4 +60,4 @@ The [results summary](docs/THREE_DATASET_FIVE_SEED_VALIDATION.md) and [dataset p
 
 ## Citation and license
 
-The source code is available under the [MIT license](LICENSE). The tagged `v1.0.0` remains a historical release; the revised manuscript uses tagged `v1.1.0` and archived audited CSVs. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
+The source code is available under the [MIT license](LICENSE). The tagged `v1.0.0` remains a historical release; the revised manuscript uses the updated `v1.0.0` and archived audited CSVs. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
