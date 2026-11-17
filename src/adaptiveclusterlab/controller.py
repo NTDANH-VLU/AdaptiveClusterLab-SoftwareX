@@ -222,6 +222,10 @@ class PolicyEnvironment:
         z_test = latent(model, x_test)
         test_sil, test_dbi = diagnostic_metrics(x_test, assign(z_test, centers))
         return dict(operation=op, k=k, latent_dim=dim,
+            val_silhouette_valid=val_sil if val_sil > -1 else float("nan"),
+            test_silhouette_valid=test_sil if test_sil > -1 else float("nan"),
+            val_degenerate=bool(val_sil == -1),
+            test_degenerate=bool(test_sil == -1),
             selected_memory_regime=selected.regime if selected is not None else "",
             memory_distance=float(distance) if selected is not None else None,
             val_silhouette=val_sil, val_dbi=val_dbi,
@@ -247,13 +251,33 @@ class TabularQLearning:
             self.q[state] = np.zeros(len(ACTIONS), dtype=np.float64)
         return self.q[state]
 
-    def choose(self, state, valid, epsilon=0.0):
+    def choose_with_info(self, state, valid, epsilon=0.0):
+        """Return the chosen action and an auditable diagnostic of the decision.
+
+        Q-values for unseen states start at zero. Ties are broken with the
+        seeded RNG rather than selecting the lowest action index.
+        """
         if not valid:
             raise ValueError("No valid actions")
-        if self.rng.random() < epsilon:
-            return int(self.rng.choice(valid))
+        unseen = state not in self.q
         values = self.values(state)
-        return int(sorted(valid, key=lambda i: (-values[i], i))[0])
+        best = max(float(values[i]) for i in valid)
+        tied = [i for i in valid if np.isclose(values[i], best, rtol=0, atol=1e-12)]
+        exploratory = bool(self.rng.random() < epsilon)
+        action = int(self.rng.choice(valid if exploratory else tied))
+        ranked = sorted((float(values[i]) for i in valid), reverse=True)
+        return action, dict(
+            q_state=str(state), q_unseen_state=bool(unseen),
+            q_tie_count=len(tied), q_tie_break=bool(not exploratory and len(tied)>1),
+            q_exploration=exploratory, q_selected_value=float(values[action]),
+            q_best_value=best,
+            q_margin=float(ranked[0]-ranked[1]) if len(ranked)>1 else float("nan"),
+            q_valid_values=json.dumps({str(i):float(values[i]) for i in valid}),
+        )
+
+    def choose(self, state, valid, epsilon=0.0):
+        action, _ = self.choose_with_info(state, valid, epsilon=epsilon)
+        return action
 
     def learn(self, state, action, reward, next_state, next_valid):
         current = self.values(state)
@@ -309,7 +333,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         raise ValueError("cost_mode must be wall_time or operation_counts")
     development_start = time.perf_counter()
     learner = TabularQLearning(seed)
-    if policy in ("q_learning", "q_learning_gated"):
+    if policy in ("q_learning", "q_learning_gated", "q_learning_fixed"):
         # Repeated development scenarios; no evaluation observation is used.
         # Different stochastic splits per episode, policy persists across episodes.
         for episode in range(development_episodes):
@@ -321,6 +345,8 @@ def run_sequence(sequence, seed=42, policy="q_learning",
                 train, val, test = split_three(x, seed + episode * 1000 + t)
                 state = environment.state(train)
                 valid = environment.possible(train)
+                if policy == "q_learning_fixed":
+                    valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
                 action = learner.choose(state, valid, epsilon=max(.1, .8 - episode * .12))
                 result = environment.act(train, val, test, action, regime=regime)
                 # Development reward only; NO test metric enters Q-learning.
@@ -333,9 +359,10 @@ def run_sequence(sequence, seed=42, policy="q_learning",
                     next_state = environment.state(next_train)
                 else:
                     next_state = state
-                learner.learn(state, action, reward, next_state,
-                              environment.possible(next_train) if t + 1 < development_len
-                              else environment.possible(train))
+                next_valid = environment.possible(next_train) if t + 1 < development_len else environment.possible(train)
+                if policy == "q_learning_fixed":
+                    next_valid = [i for i in next_valid if ACTIONS[i][:2] == (3, 8)]
+                learner.learn(state, action, reward, next_state, next_valid)
     development_seconds = time.perf_counter() - development_start
     warmup_start = time.perf_counter()
     # Evaluation replays the initial development data only to create memory;
@@ -348,8 +375,10 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         tr, val, test = split_three(x, seed + 99999 + t)
         state = environment.state(tr)
         valid = environment.possible(tr)
+        if policy == "q_learning_fixed":
+            valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
         action = (learner.choose(state, valid, epsilon=0)
-                  if policy in ("q_learning", "q_learning_gated")
+                  if policy in ("q_learning", "q_learning_gated", "q_learning_fixed")
                   else fixed_action(valid, policy))
         environment.act(tr, val, test, action, regime=regime)
     warmup_seconds = time.perf_counter() - warmup_start
@@ -360,9 +389,16 @@ def run_sequence(sequence, seed=42, policy="q_learning",
         decision_start = time.perf_counter()
         state = environment.state(tr)
         valid = environment.possible(tr)
-        action = (learner.choose(state, valid, epsilon=0)
-                  if policy in ("q_learning", "q_learning_gated")
-                  else fixed_action(valid, policy))
+        if policy == "q_learning_fixed":
+            valid = [i for i in valid if ACTIONS[i][:2] == (3, 8)]
+        if policy in ("q_learning", "q_learning_gated", "q_learning_fixed"):
+            action, decision_info = learner.choose_with_info(state, valid, epsilon=0)
+        else:
+            action = fixed_action(valid, policy)
+            decision_info = dict(q_state=str(state), q_unseen_state=False,
+                                 q_tie_count=0, q_tie_break=False, q_exploration=False,
+                                 q_selected_value=float("nan"), q_best_value=float("nan"),
+                                 q_margin=float("nan"), q_valid_values="{}")
         decision_seconds = time.perf_counter() - decision_start
         result = environment.act(tr, val, test, action, regime=regime)
         records.append(dict(batch=month, true_regime_for_audit=regime,
@@ -372,7 +408,7 @@ def run_sequence(sequence, seed=42, policy="q_learning",
             memory_warmup_seconds=warmup_seconds,
             routing_seconds=decision_seconds,
             end_to_end_decision_seconds=result["total_seconds"] + decision_seconds,
-            **result))
+            **decision_info, **result))
     totals = {field: environment.counters[field] - before[field] for field in before}
     return records, totals
 
