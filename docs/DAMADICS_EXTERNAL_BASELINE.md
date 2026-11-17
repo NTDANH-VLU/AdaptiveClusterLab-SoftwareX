@@ -6,7 +6,7 @@ Source: [MPiangerelli/FURAKI data/DAMADICS.csv](https://github.com/MPiangerelli/
 
 The file has 32 numeric features and one additional `drifting` fault/category label. This label is **excluded** from K-Means fitting, preprocessing and method-selection. It is only used for external ARI evaluation. Temporal block order of the reduced dataset must **NOT** be presented as original timestamp continuity.
 
-Protocol: eight consecutive reduced-dataset blocks of 450 records; four development blocks and four evaluation blocks. Three seeds 42/43/44; K=3/5; stable row-offset train/test splits per block; first-block train-only StandardScaler; input-space held-out metrics. This is a cross-domain **software baseline reproducibility check**, not an RL model test or original production-time drift validation.
+Protocol: eight consecutive reduced-dataset blocks of 450 records; four development blocks and four evaluation blocks. This historical diagnostic uses three seeds 42/43/44 (distinct from the five-seed 42–46 audited SoftwareX manuscript study); K=3/5; stable row-offset train/test splits per block; first-block train-only StandardScaler; input-space held-out metrics. This is a cross-domain **software baseline reproducibility check**, not an RL model test or original production-time drift validation.
 
 ## Verified GitHub Actions execution
 
@@ -33,4 +33,4 @@ python benchmarks/damadics_baselines.py --input DAMADICS.csv \
   --output results/damadics_baselines.csv --seeds 42 43 44 --ks 3 5
 ```
 
-**Not SoftwareX-ready:** the actual Hybrid-RL/CM-HRL/unified trained-controller comparison and full computation cost accounting remain incomplete. The Electricity public dataset adapter is not yet validated.
+**Historical note:** this earlier exploratory check predates the eight-policy audited five-seed SoftwareX evaluation. Current Electricity and five-seed results are in [the audit report](Q_POLICY_AUDIT_2026_11_17.md); do not conflate these protocols.
