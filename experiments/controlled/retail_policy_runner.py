@@ -76,6 +76,7 @@ def run(seed,sequence,policy,development_months=12,episodes=5,
             action=fixed_action(valid,policy)
             diag=dict(q_state=str(state),q_unseen_state=False,q_tie_count=0,
                       q_tie_break=False,q_exploration=False,
+                      q_action_visited=False,q_action_visit_count=0,
                       q_selected_value=float("nan"),q_best_value=float("nan"),
                       q_margin=float("nan"),q_valid_values="{}")
         routing=time.perf_counter()-start
