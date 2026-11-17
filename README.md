@@ -20,7 +20,7 @@ The synthetic demo needs no external dataset. To install with pip instead of uv,
 
 ## Audited source and reproduction results
 
-The updated `v1.0.0` release contains the audited action-coverage experiment and the reproducibility data. The previous v1.0.0 tag target was moved at the owner's request; the earlier historical code remains accessible by its original commit SHA. The paper's audited revision is the `main` source with its permanently committed [five-seed evaluation CSVs and checksums](reproducibility/audited-2026-11-17/PROVENANCE.json), validated by [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375). Use the updated `v1.0.0` release and its commit SHA for exact reproduction. The precise commit is preferable for long-term provenance if tags may be retargeted.
+The updated `v1.0.0` release contains the audited action-coverage experiment and the reproducibility data. The previous v1.0.0 tag target was moved at the owner's request; the earlier historical code remains accessible by its original commit SHA. The audited paper uses the **updated `v1.0.0` release at commit [`b5187362d1f50b2d9634e7be23383987d3d6f871`](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/tree/b5187362d1f50b2d9634e7be23383987d3d6f871)**, which contains the corrected source and [five-seed evaluation CSVs and checksums](reproducibility/audited-2026-11-17/PROVENANCE.json), validated by [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375). The later `main` commits are documentation and maintenance updates; cite the full commit for exact replication. Do not rely on earlier contents of the retargeted `v1.0.0` tag.
 
 ## Reproduce the paper experiments
 
@@ -60,4 +60,4 @@ The [results summary](docs/THREE_DATASET_FIVE_SEED_VALIDATION.md) and [dataset p
 
 ## Citation and license
 
-The source code is available under the [MIT license](LICENSE). The tagged `v1.0.0` remains a historical release; the revised manuscript uses the updated `v1.0.0` and archived audited CSVs. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
+The source code is available under the [MIT license](LICENSE). The updated `v1.0.0` release and pinned commit `b5187362d1f50b2d9634e7be23383987d3d6f871` identify the audited manuscript source and archived CSVs. The previous contents of the retargeted tag are historical Git commits; the tag is not moved further. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
