@@ -47,6 +47,8 @@ def summarize(rows):
             "updates": sum(int(r["count_ae_updates"]) for r in items),
             "reuses": len(reused),
             "reuses_from_unseen_q_states": sum(yes(r["q_unseen_state"]) for r in reused),
+            "reuses_from_untrained_q_actions": sum(not yes(r["q_action_visited"]) for r in reused),
+            "reuses_from_trained_q_actions": sum(yes(r["q_action_visited"]) for r in reused),
             "reuses_from_tie_breaks": sum(yes(r["q_tie_break"]) for r in reused),
             "evaluation_unseen_states": sum(yes(r["q_unseen_state"]) for r in items),
             "evaluation_tie_breaks": sum(yes(r["q_tie_break"]) for r in items),
@@ -66,7 +68,7 @@ def main():
     if not rows:
         raise ValueError("Evaluation CSV is empty")
     needed = {"method","seed","test_silhouette","test_silhouette_valid",
-              "test_degenerate","q_unseen_state","q_tie_break","k",
+              "test_degenerate","q_unseen_state","q_tie_break","q_action_visited","k",
               "latent_dim","count_ae_full","count_ae_updates","operation"}
     assert needed.issubset(rows[0]), f"Missing audit fields: {needed-set(rows[0])}"
     result = {"source": str(args.evaluation_csv), "methods": summarize(rows)}
