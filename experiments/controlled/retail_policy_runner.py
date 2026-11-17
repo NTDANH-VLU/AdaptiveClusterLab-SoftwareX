@@ -6,11 +6,11 @@ import argparse,csv,hashlib,json,time
 from pathlib import Path
 import numpy as np
 from quality_cost_aba import ACTIONS, PolicyEnvironment,TabularQLearning,fixed_action
-POLICIES=("always_retrain","reuse_when_available","always_update","q_learning","q_learning_gated","q_learning_fixed")
+POLICIES=("always_retrain","reuse_when_available","always_update","q_learning","q_learning_gated","q_learning_fixed","q_learning_covered","q_learning_fixed_covered")
 
 def candidates(env, x, policy):
     valid = env.possible(x)
-    return [i for i in valid if ACTIONS[i][:2] == (3,8)] if policy == "q_learning_fixed" else valid
+    return [i for i in valid if ACTIONS[i][:2] == (3,8)] if policy in ("q_learning_fixed","q_learning_fixed_covered") else valid
 
 
 def stable_split(x,ids,seed,max_per_partition=160):
@@ -63,7 +63,7 @@ def run(seed,sequence,policy,development_months=12,episodes=5,
     start=time.perf_counter()
     for _,tr,val,te in sequence[:development_months]:
         state=env.state(tr);valid=candidates(env,tr,policy)
-        action=learner.choose(state,valid) if policy.startswith("q_learning") else fixed_action(valid,policy)
+        action=learner.choose_with_info(state,valid,require_trained=policy in ("q_learning_covered","q_learning_fixed_covered"))[0] if policy.startswith("q_learning") else fixed_action(valid,policy)
         env.act(tr,val,te,action)
     warmup_seconds=time.perf_counter()-start
     rows=[]
@@ -71,12 +71,13 @@ def run(seed,sequence,policy,development_months=12,episodes=5,
         start=time.perf_counter()
         state=env.state(tr);valid=candidates(env,tr,policy)
         if policy.startswith("q_learning"):
-            action,diag=learner.choose_with_info(state,valid,epsilon=0)
+            action,diag=learner.choose_with_info(state,valid,epsilon=0,
+                 require_trained=policy in ("q_learning_covered","q_learning_fixed_covered"))
         else:
             action=fixed_action(valid,policy)
             diag=dict(q_state=str(state),q_unseen_state=False,q_tie_count=0,
                       q_tie_break=False,q_exploration=False,
-                      q_action_visited=False,q_action_visit_count=0,
+                      q_action_visited=False,q_action_visit_count=0,q_coverage_fallback=False,
                       q_selected_value=float("nan"),q_best_value=float("nan"),
                       q_margin=float("nan"),q_valid_values="{}")
         routing=time.perf_counter()-start
