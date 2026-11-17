@@ -38,7 +38,7 @@ jobs:
               --input data/raw/DAMADICS.csv --seeds 42 43 44 45 46 \
               --output results/damadics/baselines_5seed.csv
           fi
-      - name: Audit degenerate clusters, Q ties, trained actions and fixed-configuration policy
+      - name: Audit trained-only Q fallbacks, Q ties, degenerate clusters and K-d matching
         if: success()
         run: uv run --all-extras --locked python scripts/audit_results.py results/${{ matrix.dataset }}/evaluation.csv
       - name: Archive results
