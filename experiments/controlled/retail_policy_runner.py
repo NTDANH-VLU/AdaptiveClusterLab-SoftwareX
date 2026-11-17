@@ -5,8 +5,13 @@ Stable customer-hash split; first 12 months for policy development, last 12 for 
 import argparse,csv,hashlib,json,time
 from pathlib import Path
 import numpy as np
-from quality_cost_aba import PolicyEnvironment,TabularQLearning,fixed_action
-POLICIES=("always_retrain","reuse_when_available","always_update","q_learning","q_learning_gated")
+from quality_cost_aba import ACTIONS, PolicyEnvironment,TabularQLearning,fixed_action
+POLICIES=("always_retrain","reuse_when_available","always_update","q_learning","q_learning_gated","q_learning_fixed")
+
+def candidates(env, x, policy):
+    valid = env.possible(x)
+    return [i for i in valid if ACTIONS[i][:2] == (3,8)] if policy == "q_learning_fixed" else valid
+
 
 def stable_split(x,ids,seed,max_per_partition=160):
     """Persist customer membership across months; train/validation/test 60/20/20."""
@@ -44,35 +49,42 @@ def run(seed,sequence,policy,development_months=12,episodes=5,
         for episode in range(episodes):
             env=PolicyEnvironment(ae_epochs,update_epochs,seed=seed,reuse_threshold=gate)
             for t,(_,tr,val,te) in enumerate(sequence[:development_months]):
-                state=env.state(tr);valid=env.possible(tr)
+                state=env.state(tr);valid=candidates(env,tr,policy)
                 action=learner.choose(state,valid,epsilon=max(.1,.8-.12*episode))
                 result=env.act(tr,val,te,action)
                 reward=result["val_silhouette"]-cost_weight*(result["total_seconds"] if cost_mode=="wall_time" else result["count_ae_full"]+0.25*result["count_ae_updates"])
                 if t+1<development_months:
                     next_tr=sequence[t+1][1];next_state=env.state(next_tr)
-                    next_valid=env.possible(next_tr)
-                else:next_state=state;next_valid=env.possible(tr)
+                    next_valid=candidates(env,next_tr,policy)
+                else:next_state=state;next_valid=candidates(env,tr,policy)
                 learner.learn(state,action,reward,next_state,next_valid)
     training_seconds=time.perf_counter()-start
     env=PolicyEnvironment(ae_epochs,update_epochs,seed=seed,reuse_threshold=gate)
     start=time.perf_counter()
     for _,tr,val,te in sequence[:development_months]:
-        state=env.state(tr);valid=env.possible(tr)
+        state=env.state(tr);valid=candidates(env,tr,policy)
         action=learner.choose(state,valid) if policy.startswith("q_learning") else fixed_action(valid,policy)
         env.act(tr,val,te,action)
     warmup_seconds=time.perf_counter()-start
     rows=[]
     for month,tr,val,te in sequence[development_months:]:
         start=time.perf_counter()
-        state=env.state(tr);valid=env.possible(tr)
-        action=learner.choose(state,valid) if policy.startswith("q_learning") else fixed_action(valid,policy)
+        state=env.state(tr);valid=candidates(env,tr,policy)
+        if policy.startswith("q_learning"):
+            action,diag=learner.choose_with_info(state,valid,epsilon=0)
+        else:
+            action=fixed_action(valid,policy)
+            diag=dict(q_state=str(state),q_unseen_state=False,q_tie_count=0,
+                      q_tie_break=False,q_exploration=False,
+                      q_selected_value=float("nan"),q_best_value=float("nan"),
+                      q_margin=float("nan"),q_valid_values="{}")
         routing=time.perf_counter()-start
         result=env.act(tr,val,te,action)
         rows.append(dict(dataset="temporally_batched_data",seed=seed,month=month,method=policy,
                          reward_cost_mode=cost_mode,
                          n_train=len(tr),n_validation=len(val),n_test=len(te),
                          policy_training_seconds=training_seconds,memory_warmup_seconds=warmup_seconds,
-                         routing_seconds=routing,decision_seconds=routing+result["total_seconds"],**result))
+                         routing_seconds=routing,decision_seconds=routing+result["total_seconds"],**diag,**result))
     return rows
 
 def main():
@@ -97,7 +109,11 @@ def main():
             part=run(seed,seq,policy,a.development_months,a.episodes,a.ae_epochs,a.update_epochs,cost_mode=a.cost_mode)
             rows.extend(part)
             print(json.dumps(dict(seed=seed,method=policy,n=len(part),
-                mean_test_silhouette=float(np.mean([r["test_silhouette"] for r in part])),
+                mean_penalized_silhouette=float(np.mean([r["test_silhouette"] for r in part])),
+                mean_valid_silhouette=float(np.nanmean([r["test_silhouette_valid"] for r in part])) if any(not r["test_degenerate"] for r in part) else None,
+                n_degenerate=sum(r["test_degenerate"] for r in part),
+                q_unseen=sum(r["q_unseen_state"] for r in part),
+                q_tie_breaks=sum(r["q_tie_break"] for r in part),
                 reuse=sum(r["operation"]=="reuse" for r in part),
                 retrain=sum(r["count_ae_full"] for r in part))),flush=True)
     out=Path(a.output);out.parent.mkdir(parents=True,exist_ok=True)
