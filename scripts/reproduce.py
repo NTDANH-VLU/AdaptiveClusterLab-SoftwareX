@@ -63,9 +63,20 @@ def metrics_summary(csv_path: Path) -> Path:
         summary["methods"][method] = {
             "n_evaluations": len(items),
             "seeds": sorted({int(x["seed"]) for x in items}),
-            "test_silhouette_mean": float(
+            "test_silhouette_penalized_mean": float(
                 np.mean([float(x["test_silhouette"]) for x in items])
             ),
+            "test_silhouette_valid_mean": (
+                float(np.mean([float(x["test_silhouette_valid"]) for x in items
+                               if str(x["test_degenerate"]).lower() != "true"]))
+                if any(str(x["test_degenerate"]).lower() != "true" for x in items) else None
+            ),
+            "test_degenerate_count": sum(
+                str(x["test_degenerate"]).lower() == "true" for x in items),
+            "q_unseen_count": sum(
+                str(x["q_unseen_state"]).lower() == "true" for x in items),
+            "q_tie_break_count": sum(
+                str(x["q_tie_break"]).lower() == "true" for x in items),
             "test_dbi_mean": float(
                 np.nanmean([float(x["test_dbi"]) for x in items])
             ),
@@ -94,7 +105,7 @@ def demo(output_dir: Path, quick: bool, cost_mode: str, seeds: list[int]) -> Non
         sequence = make_aba(seed=seed + 100, batches=6, size=75,
                             order=["A", "A", "B", "B", "A", "A"])
         for method in ("always_retrain", "reuse_when_available",
-                       "always_update", "q_learning"):
+                       "always_update", "q_learning", "q_learning_fixed"):
             records, _ = run_sequence(
                 sequence, seed=seed, policy=method,
                 development_len=3, development_episodes=1 if quick else 3,
