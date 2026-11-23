@@ -64,4 +64,4 @@ The [results summary](docs/THREE_DATASET_FIVE_SEED_VALIDATION.md) and [dataset p
 
 ## Citation and license
 
-The source code is available under the [MIT license](LICENSE). The updated `v1.0.0` release and pinned commit `b5187362d1f50b2d9634e7be23383987d3d6f871` identify the audited manuscript source and archived CSVs. The previous contents of the retargeted tag are historical Git commits; the tag is not moved further. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
+The source code is available under the MIT license ([LICENSE](LICENSE), and the identical journal-requested [Licence.txt](Licence.txt) on `main`). The pinned `v1.0.0` source commit includes `LICENSE`; `Licence.txt` was added later on `main` without modifying the audited release. The updated `v1.0.0` release and pinned commit `b5187362d1f50b2d9634e7be23383987d3d6f871` identify the audited manuscript source and archived CSVs. The previous contents of the retargeted tag are historical Git commits; the tag is not moved further. See [CITATION.cff](CITATION.cff) for author metadata. No software DOI has been assigned.
