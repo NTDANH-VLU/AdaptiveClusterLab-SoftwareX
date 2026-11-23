@@ -1,8 +1,6 @@
 # SoftwareX policy and Silhouette audit (2026-11-17)
 
-**Status:** exploratory validation on `main`, **NOT** part of the tagged
-`v1.0.0` release and **NOT** yet an approved replacement for the paper's
-tables. All three jobs completed successfully in
+**Release status (updated after the 17 November audit):** The original exploratory notes below are preserved to document how the audit developed. The **final coverage-aware results** in the follow-up section were archived with the audited `v1.0.0` release, pinned at commit `b5187362d1f50b2d9634e7be23383987d3d6f871`, and are used in the SoftwareX manuscript. Earlier warnings against submitting the *pre-audit* Table 3 are historical, not current submission advice. All three jobs completed successfully in
 [GitHub Actions run 44039050405](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039050405),
 using public Online Retail II, reduced DAMADICS and UCI Electricity,
 five seeds 42–46, operation-count reward, the original AE budget and temporal
@@ -71,13 +69,9 @@ among the **six valid** results is 0.3089. The former must be labeled as a
 penalized quality score, not mean Silhouette. The 14/20 failure rate belongs
 beside the valid mean in a revised table.
 
-## Submission decision
+## Historical submission decision (superseded)
 
-**Do not submit the existing manuscript as if its Table 3, abstract percentages,
-or reuse mechanism reflect these audited runs.** Retain published tag v1.0.0
-unchanged. Before a new final release, consider an explicit trained-action
-fallback/coverage policy for unseen states, then rerun all comparisons and
-issue a fresh tagged version with the final CSV files.
+At the initial audit stage, the pre-audit manuscript did not yet match these corrected results. That warning was resolved by evaluating trained-action coverage and archiving the final five-seed results in the pinned audited `v1.0.0` release. **Do not use the earlier, unrestricted-Q figures as the final Table 3.**
 
 
 ## Follow-up: trained-action-only coverage ablation
