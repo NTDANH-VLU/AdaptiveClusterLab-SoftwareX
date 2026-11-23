@@ -108,7 +108,4 @@ unrestricted fixed-K/d policy produced 13 reuses from untrained Q actions.
 Thus the earlier result should not be interpreted as evidence of learned reuse.
 
 **Conclusion:** the three originally raised validity issues are now auditable,
-and a conservative action-coverage alternative has been evaluated. The new
-results must be reviewed and incorporated into the manuscript before
-submission. The public `v1.0.0` tag is intentionally unchanged; these changes
-currently live on `main` and need a fresh versioned release if adopted.
+and a conservative action-coverage alternative has been evaluated. These follow-up results were subsequently reviewed, incorporated into the revised manuscript and archived in the audited `v1.0.0` source snapshot at commit `b5187362d1f50b2d9634e7be23383987d3d6f871`. The earlier instruction to create a new version is historical and superseded. Changes to this documentation on `main` do not alter the pinned release.
