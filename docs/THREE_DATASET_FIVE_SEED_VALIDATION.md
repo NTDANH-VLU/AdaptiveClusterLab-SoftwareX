@@ -6,7 +6,7 @@
 
 # Five-seed validation reference
 
-This document summarizes the five-seed evaluation reported in the SoftwareX manuscript. The standalone repository contains the source code, the complete reproduction workflow and independently verified outputs. **Verified on the clean repository:** [GitHub Actions run 43808723741](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43808723741) successfully completed all three independent five-seed controllers and baseline evaluations. The downloaded new evaluation and baseline CSVs reproduce the means and operation counts reported below.
+This document preserves an earlier five-seed evaluation for historical comparison. **Its controller table is not the final SoftwareX manuscript Table 3.** The submitted manuscript uses valid-Silhouette and action-coverage results in [Q_POLICY_AUDIT_2026_11_17.md](Q_POLICY_AUDIT_2026_11_17.md) and the [audited results archive](../reproducibility/audited-2026-11-17/PROVENANCE.json). The standalone repository contains the source code, the complete reproduction workflow and independently verified outputs. **Verified on the clean repository:** [GitHub Actions run 43808723741](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/43808723741) successfully completed all three independent five-seed controllers and baseline evaluations. The downloaded new evaluation and baseline CSVs reproduce the means and operation counts reported below.
 
 All methods used seeds 42–46, five policy-development episodes, two full autoencoder epochs, one update epoch and the operation-count reward. Test data were held out of controller action selection.
 
@@ -16,7 +16,7 @@ All methods used seeds 42–46, five policy-development episodes, two full autoe
 | Reduced FURAKI DAMADICS | 4 / 4 blocks in file order | 20 | 110 |
 | UCI Electricity | 12 / 12 monthly batches | 60 | 110 |
 
-## Controller results
+## Historical controller results (superseded; do not cite as the final Table 3)
 
 The action counts are full AE fits / model updates / real model reuses.
 
