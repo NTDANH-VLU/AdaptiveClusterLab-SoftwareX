@@ -12,7 +12,7 @@
   "ae_full_epochs": 2,
   "ae_update_epochs": 1,
   "method": "audited Q-learning and trained-action coverage ablations",
-  "note": "Historical v1.0.0 release does not include this protocol. See main or a pinned audited commit.",
+  "note": "This audit was run at verified_workflow_commit e60c71aa68494d6dc1e7d618464485197ac682d8; its audited outputs and SHA-256 checksums are archived in the updated v1.0.0 release pinned at b5187362d1f50b2d9634e7be23383987d3d6f871. The original pre-audit tag target is historical; cite the full pinned SHA for reproducibility.",
   "sha256": {
     "damadics/audit_report.json": "6648d90c5541566f97cd6227a88e501f00becf8b982f9ab2c7ea6ce41331ef2d",
     "damadics/baselines_5seed.csv": "642e1e72b01e2c5407ed81a785d8f6cf6dbc8b392fd61e602fee6e35206f46a2",
