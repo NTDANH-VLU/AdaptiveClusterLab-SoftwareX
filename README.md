@@ -22,6 +22,10 @@ The synthetic demo needs no external dataset. To install with pip instead of uv,
 
 The updated `v1.0.0` release contains the audited action-coverage experiment and the reproducibility data. The previous v1.0.0 tag target was moved at the owner's request; the earlier historical code remains accessible by its original commit SHA. The audited paper uses the **updated `v1.0.0` release at commit [`b5187362d1f50b2d9634e7be23383987d3d6f871`](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/tree/b5187362d1f50b2d9634e7be23383987d3d6f871)**, which contains the corrected source and [five-seed evaluation CSVs and checksums](reproducibility/audited-2026-11-17/PROVENANCE.json), validated by [GitHub Actions run 44039942375](https://github.com/NTDANH-VLU/AdaptiveClusterLab-SoftwareX/actions/runs/44039942375). The later `main` commits are documentation and maintenance updates; cite the full commit for exact replication. Do not rely on earlier contents of the retargeted `v1.0.0` tag.
 
+## Documentation history and audited manuscript
+
+The pinned `v1.0.0` source commit is the reproducible manuscript snapshot. Its `PROVENANCE.json` records the earlier CI commit where the five-seed artifacts were generated; the audited CSVs and checksums were subsequently included in the pinned release. Some historical notes in that immutable snapshot still describe the pre-audit stage. The **current `main` documentation clarifies which historical analyses are superseded**; this documentation cleanup does not change the tagged source or the audited CSVs. For manuscript claims use the final covered-policy results in [the policy audit](docs/Q_POLICY_AUDIT_2026_11_17.md), not the older penalized-Silhouette controller table in [historical validation notes](docs/THREE_DATASET_FIVE_SEED_VALIDATION.md).
+
 ## Reproduce the paper experiments
 
 The SoftwareX experiment protocol uses independent seeds 42–46, an operation-count reward (not elapsed CPU time), five Q-learning development episodes, two full autoencoder epochs and one update epoch:
